@@ -79,7 +79,7 @@ docker compose up -d
   - Metabase UI: http://localhost:3000
   - PostgreSQL: localhost:5432
 
-**### Step 2: Ingest Weather Data (Bronze)**
+**### Step 2: Ingest Weather Data (Bronze) **
 
 Run the Python ingestion script:
  - python ingestion/fetch_weather.py
