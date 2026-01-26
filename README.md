@@ -226,7 +226,3 @@ Through this project, you'll gain hands-on experience with:
 
 ---
 
-
-Your Name - [@yourtwitter](https://twitter.com/yourtwitter) - your.email@example.com
-
-Project Link: [https://github.com/yourusername/weather-data-platform](https://github.com/yourusername/weather-data-platform)
