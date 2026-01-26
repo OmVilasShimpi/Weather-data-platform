@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: weather_hourly
+    description: "Hourly weather observations (Silver)"
+    columns:
+      - name: city
+        tests: [not_null]
+      - name: time
+        tests: [not_null]
+      - name: ingestion_id
+        tests: [not_null]
+
+  - name: weather_daily_summary
+    description: "Daily weather summary (Gold)"
+    columns:
+      - name: city
+        tests: [not_null]
+      - name: day
+        tests: [not_null]
+      - name: hours_count
+        tests: [not_null]

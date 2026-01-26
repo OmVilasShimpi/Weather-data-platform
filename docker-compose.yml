@@ -1,0 +1,33 @@
+name: weather-data-platform
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: wdp_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: weather
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  metabase:
+    image: metabase/metabase:latest
+    container_name: wdp_metabase
+    depends_on:
+      - postgres
+    ports:
+      - "3000:3000"
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: weather
+      MB_DB_PORT: 5432
+      MB_DB_USER: postgres
+      MB_DB_PASS: postgres
+      MB_DB_HOST: postgres
+
+volumes:
+  pgdata:
+       
