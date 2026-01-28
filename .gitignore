@@ -1,18 +1,21 @@
-# Python
+# secrets
+.env
+
+# python
 __pycache__/
 *.pyc
 .venv/
 venv/
 
-# Environment variables
-.env
+# logs
+logs/
+*.log
 
 # dbt
-target/
-dbt_packages/
-logs/
+weather_dbt/target/
+weather_dbt/logs/
+weather_dbt/.user.yml
 
-# OS / Editor
+# OS/editor
 .DS_Store
 .vscode/
-.idea/
