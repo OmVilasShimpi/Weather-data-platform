@@ -1,50 +1,58 @@
 # 🌦️ Weather Data Platform
 
-An end-to-end **data engineering project** that ingests real weather data from a public API and processes it using a **Bronze / Silver / Gold** data model with **Python, PostgreSQL, and dbt**.
+An end-to-end data engineering project that ingests **live weather data** from a public API and processes it using a **Bronze / Silver / Gold** data model with **Python, PostgreSQL, dbt, and Metabase**.
 
-This project demonstrates production-ready data engineering practices: raw data ingestion, structured transformations, automated data quality testing, and analytics-ready outputs.
+This project demonstrates **production-style data engineering practices**: raw data ingestion, layered transformations, automated data quality testing, data freshness monitoring, and analytics-ready dashboards.
 
 ---
 
 ## 🚀 Project Overview
 
-**Goal:**  
-Build a production-style data platform that:
-- Ingests real weather data from an external API  
-- Stores raw data safely without modification (Bronze layer)  
-- Transforms data into clean, structured tables (Silver layer)  
-- Aggregates data into analytics-ready summaries (Gold layer)  
-- Enforces data quality using automated dbt tests  
+### Goal
+Build a production-style weather analytics platform that:
+
+- Ingests **live weather data** from an external API
+- Stores raw data safely without modification (**Bronze layer**)
+- Transforms data into clean, structured tables (**Silver layer**)
+- Aggregates data into analytics-ready summaries (**Gold layer**)
+- Enforces data quality using automated **dbt tests**
+- Displays **near-real-time dashboards** with freshness indicators
+
+⏱️ **Live ingestion runs automatically every 10 minutes**, enabling near-real-time analytics.
 
 ---
 
 ## 🛠️ Tech Stack
 
 | Technology | Purpose |
-|------------|---------|
-| **Python** | API ingestion scripts |
-| **PostgreSQL** | Analytical data warehouse |
-| **dbt** | Data transformations, testing, and modelling |
-| **Metabase** | Querying and visualization |
-| **Docker** | Local infrastructure setup |
-| **Git & GitHub** | Version control |
+|----------|--------|
+| Python | API ingestion & orchestration |
+| PostgreSQL | Analytical data warehouse |
+| dbt | Data transformations, testing, modelling |
+| Metabase | Analytics & dashboards |
+| Docker | Local infrastructure |
+| Git & GitHub | Version control |
 
 ---
 
 ## 🏗️ Architecture
 
 ```
-Open-Meteo API → Python Ingestion → PostgreSQL
-                                          ↓
-                                    Bronze Layer (Raw JSONB)
-                                          ↓
-                                    dbt Transformations
-                                          ↓
-                                    Silver Layer (Structured)
-                                          ↓
-                                    Gold Layer (Aggregated)
-                                          ↓
-                                    Metabase Dashboards
+Open-Meteo API
+      ↓
+Python Ingestion (scheduled every 10 min)
+      ↓
+PostgreSQL
+      ↓
+Bronze Layer (raw JSONB)
+      ↓
+dbt transformations
+      ↓
+Silver Layer (structured)
+      ↓
+Gold Layer (aggregated)
+      ↓
+Metabase Dashboards
 ```
 
 ---
@@ -53,33 +61,49 @@ Open-Meteo API → Python Ingestion → PostgreSQL
 
 ### 🥉 Bronze Layer
 **Raw, immutable data**
-- Weather data fetched from the Open-Meteo API  
-- Stored as **JSONB** for flexibility  
-- Append-only architecture (no updates or deletes)  
 
-**Example table:** `bronze.weather_hourly_raw`
+- Weather data fetched from Open-Meteo API
+- Stored as JSONB for schema flexibility
+- Append-only architecture (no updates / deletes)
+
+Example table:
+```
+bronze.weather_hourly_raw
+```
+
+---
 
 ### 🥈 Silver Layer
-**Cleaned and structured data**
-- Parsed and typed hourly weather observations  
-- One row per city per hour  
-- Optimized for analytical queries  
+**Cleaned & structured data**
 
-**Example table:** `silver.weather_hourly`
+- Parsed and typed hourly weather observations
+- One row per city per hour
+- Optimized for analytical queries
+
+Example table:
+```
+silver.weather_hourly
+```
+
+---
 
 ### 🥇 Gold Layer
 **Analytics-ready aggregations**
-- Daily weather summaries by city  
-- Pre-calculated metrics for dashboards  
 
-**Example table:** `gold.weather_daily_summary`
+- Daily weather summaries by city
+- Pre-calculated metrics for dashboards
 
-**Metrics include:**
-- Average / Minimum / Maximum temperature  
-- Total daily precipitation  
-- Average humidity  
-- Maximum wind speed  
-- Number of hourly records per day  
+Example table:
+```
+gold.weather_daily_summary
+```
+
+Metrics include:
+- Average / minimum / maximum temperature
+- Total daily precipitation
+- Average humidity
+- Maximum wind speed
+- Number of hourly observations per day
 
 ---
 
@@ -87,27 +111,64 @@ Open-Meteo API → Python Ingestion → PostgreSQL
 
 The project uses **dbt tests** to ensure data reliability:
 
-- `not_null` tests on critical columns  
-- `unique` tests to enforce correct data grain  
-- Custom tests for data freshness and completeness  
+- `not_null` tests on critical columns
+- `unique` tests to enforce correct data grain
+- Custom tests for data freshness and completeness
 
-Run all tests with:
+Run tests with:
 ```bash
 dbt test
 ```
 
-This ensures Silver and Gold tables remain trustworthy as data grows.
+This ensures Silver and Gold layers remain trustworthy as data grows.
+
+---
+
+## ⏱️ Live Ingestion & Data Freshness
+
+Weather data is ingested automatically every 10 minutes via a scheduled ingestion process.
+
+To ensure transparency and trust:
+
+- Each record includes an `ingested_at` timestamp (UTC)
+- Dashboards display a "Last updated X minutes ago" indicator
+- Users can immediately see whether the data is fresh or stale
+
+This mirrors real production monitoring patterns.
+
+---
+
+## 📊 Analytics & Visualization
+
+Metabase dashboards provide:
+
+- 📈 Daily temperature trends
+- 🌧️ Precipitation analysis
+- 🏙️ City-level comparisons
+- 💨 Wind speed patterns
+- ⏱️ Live snapshot of current conditions per city
+
+Example query:
+
+```sql
+SELECT
+  city,
+  date,
+  avg_temperature_c,
+  total_precipitation_mm
+FROM gold.weather_daily_summary
+WHERE date >= CURRENT_DATE - INTERVAL '7 days'
+ORDER BY date DESC;
+```
 
 ---
 
 ## 📋 Prerequisites
 
-Before running this project, ensure you have:
-
-- **Docker** and **Docker Compose** installed
-- **Python 3.8+** installed
-- **Git** for version control
-- Basic familiarity with SQL and command line
+- Docker & Docker Compose
+- Python 3.9+ (tested on Python 3.13)
+- Git
+- Basic SQL knowledge
 
 ---
 
@@ -115,7 +176,7 @@ Before running this project, ensure you have:
 
 ### 1️⃣ Clone the repository
 ```bash
-git clone https://github.com/yourusername/weather-data-platform.git
+git clone https://github.com/OmVilasShimpi/Weather-data-platform.git
 cd weather-data-platform
 ```
 
@@ -124,62 +185,52 @@ cd weather-data-platform
 docker-compose up -d
 ```
 
-This will start:
-- PostgreSQL database
-- Metabase (accessible at `http://localhost:3000`)
+This starts:
+- PostgreSQL
+- Metabase (http://localhost:3000)
 
 ### 3️⃣ Set up Python environment
 ```bash
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+venv\Scripts\activate   # Windows
+# source venv/bin/activate  # macOS/Linux
 pip install -r requirements.txt
 ```
 
-### 4️⃣ Run data ingestion
+### 4️⃣ Configure environment variables
+Create a `.env` file in the project root:
+
+```env
+PGHOST=localhost
+PGPORT=5432
+PGDATABASE=weather
+PGUSER=postgres
+PGPASSWORD=postgres
+```
+
+⚠️ `.env` is excluded via `.gitignore` and should never be committed.
+
+### 5️⃣ Run ingestion manually (optional)
 ```bash
 python ingestion/fetch_weather.py
 ```
 
-This fetches the latest weather data and loads it into the Bronze layer.
+In production-style usage, ingestion runs automatically via a scheduler.
 
-### 5️⃣ Run dbt transformations and tests
+### 6️⃣ Run dbt transformations
 ```bash
 cd weather_dbt
 dbt run
 dbt test
 ```
 
-This will:
-- Transform Bronze → Silver → Gold
-- Run all data quality tests
-
-### 6️⃣ View results in Metabase
-1. Navigate to `http://localhost:3000`
-2. Connect to PostgreSQL database
-3. Query the Gold layer tables or build dashboards
-
----
-
-## 📊 Analytics & Visualization
-
-The final Gold tables can be used to build:
-
-- 📈 Daily temperature trends
-- 🌧️ Precipitation analysis  
-- 🏙️ City-level weather comparisons
-- 💨 Wind speed patterns
-
-Example query:
-```sql
-SELECT 
-    city,
-    date,
-    avg_temperature_c,
-    total_precipitation_mm
-FROM gold.weather_daily_summary
-WHERE date >= CURRENT_DATE - INTERVAL '7 days'
-ORDER BY date DESC;
+### 7️⃣ View dashboards
+Open:
 ```
+http://localhost:3000
+```
+
+Connect Metabase to PostgreSQL and explore dashboards.
 
 ---
 
@@ -187,17 +238,18 @@ ORDER BY date DESC;
 
 ```
 weather-data-platform/
-├── ingestion/              # Python scripts for API data fetching
+├── ingestion/              # Python ingestion scripts
 │   └── fetch_weather.py
 ├── weather_dbt/            # dbt project
 │   ├── models/
-│   │   ├── bronze/        # Raw data models
-│   │   ├── silver/        # Cleaned data models
-│   │   └── gold/          # Aggregated models
-│   ├── tests/             # Data quality tests
+│   │   ├── bronze/
+│   │   ├── silver/
+│   │   └── gold/
+│   ├── tests/
 │   └── dbt_project.yml
-├── docker-compose.yml      # Infrastructure setup
-├── requirements.txt        # Python dependencies
+├── docker-compose.yml
+├── requirements.txt
+├── .gitignore
 └── README.md
 ```
 
@@ -205,24 +257,28 @@ weather-data-platform/
 
 ## 📌 Key Learnings
 
-Through this project, you'll gain hands-on experience with:
+Through this project, you gain experience with:
 
-✅ Designing layered data models (Bronze / Silver / Gold)  
-✅ Handling semi-structured JSON data in PostgreSQL  
-✅ Building reproducible data pipelines with dbt  
-✅ Implementing automated data quality checks  
-✅ End-to-end ownership of a data engineering project  
+- Designing layered data models (Bronze / Silver / Gold)
+- Handling semi-structured JSON data in PostgreSQL
+- Building reproducible pipelines with dbt
+- Implementing automated data quality checks
+- Monitoring data freshness
+- End-to-end ownership of a data engineering system
 
 ---
 
 ## 🔮 Future Improvements
 
-- [ ] Add multiple cities dynamically from configuration
-- [ ] Schedule ingestion using **Airflow** or **Prefect**
-- [ ] Implement data freshness tests
-- [ ] Add incremental loading strategies
-- [ ] Extend dashboards with advanced analytics
-- [ ] Add CI/CD pipeline for automated testing
+- Deploy PostgreSQL and Metabase on cloud infrastructure
+- Add alerts when data becomes stale
+- Introduce incremental loading strategies
+- Implement true streaming ingestion (Kafka-style)
+- Add CI/CD pipeline for automated dbt testing
 
 ---
 
+
+---
+
+⭐ **If you found this project helpful, please consider giving it a star!**
