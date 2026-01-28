@@ -204,8 +204,8 @@ Create a `.env` file in the project root:
 PGHOST=localhost
 PGPORT=5432
 PGDATABASE=weather
-PGUSER=postgres
-PGPASSWORD=postgres
+PGUSER=<your_db_user>
+PGPASSWORD=<your_db_password>
 ```
 
 ⚠️ `.env` is excluded via `.gitignore` and should never be committed.
