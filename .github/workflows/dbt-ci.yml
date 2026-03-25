@@ -27,6 +27,11 @@ jobs:
 
     env:
       DBT_PROFILES_DIR: ${{ github.workspace }}/weather_dbt
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGDATABASE: weather
+      PGUSER: postgres
+      PGPASSWORD: postgres
 
     steps:
       - name: Checkout repository
@@ -37,8 +42,42 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dbt
-        run: pip install dbt-postgres
+      - name: Install Python dependencies
+        run: pip install dbt-postgres requests psycopg2-binary python-dotenv
+
+      - name: Create bronze schema and raw table
+        run: |
+          python - <<'PY'
+          import os
+          import psycopg2
+
+          conn = psycopg2.connect(
+              host=os.environ["PGHOST"],
+              port=os.environ["PGPORT"],
+              dbname=os.environ["PGDATABASE"],
+              user=os.environ["PGUSER"],
+              password=os.environ["PGPASSWORD"],
+          )
+          conn.autocommit = True
+
+          with conn.cursor() as cur:
+              cur.execute("""
+                  create schema if not exists bronze;
+                  create table if not exists bronze.weather_hourly_raw (
+                      ingestion_id text primary key,
+                      ingested_at timestamptz not null,
+                      city text not null,
+                      lat double precision not null,
+                      lon double precision not null,
+                      payload jsonb not null
+                  );
+              """)
+
+          conn.close()
+          PY
+
+      - name: Run ingestion
+        run: python ingestion/fetch_weather.py
 
       - name: Create dbt profile
         run: |
