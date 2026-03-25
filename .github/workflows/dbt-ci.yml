@@ -1,0 +1,70 @@
+name: dbt CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  dbt-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: weather
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d weather"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      DBT_PROFILES_DIR: ${{ github.workspace }}/weather_dbt
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dbt
+        run: pip install dbt-postgres
+
+      - name: Create dbt profile
+        run: |
+          cat > weather_dbt/profiles.yml <<'EOF'
+          weather_dbt:
+            target: dev
+            outputs:
+              dev:
+                type: postgres
+                host: 127.0.0.1
+                user: postgres
+                password: postgres
+                port: 5432
+                dbname: weather
+                schema: public
+                threads: 1
+          EOF
+
+      - name: Run dbt debug
+        working-directory: weather_dbt
+        run: dbt debug
+
+      - name: Run dbt models
+        working-directory: weather_dbt
+        run: dbt run
+
+      - name: Run dbt tests
+        working-directory: weather_dbt
+        run: dbt test
