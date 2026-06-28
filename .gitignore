@@ -15,6 +15,7 @@ logs/
 weather_dbt/target/
 weather_dbt/logs/
 weather_dbt/.user.yml
+weather_dbt/dbt_packages/
 
 # OS/editor
 .DS_Store
